@@ -1,6 +1,7 @@
 import asyncio
 import os
 import logging
+import re
 import shutil
 import tempfile
 import time
@@ -175,6 +176,13 @@ async def translate_func(src: SrcText, ruuid: str):
 @app.post("/translate", response_model=TgtText)
 async def translate_text(src: SrcText, request: Request):
     ruuid = request.state.ruuid
+
+    if src.text == "":
+        return {"text": ""}
+
+    if re.fullmatch("^\s+$", src.text):
+        return {"text": src.text}
+
     if os.environ.get("SPLIT_SENTENCES", "") != "":
         _out_txt = await asyncio.gather(
             *[
